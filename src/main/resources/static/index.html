@@ -1,421 +1,204 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta property="og:title" content="Timeline Service"/>
+  <meta property="og:description" content="공유하고 싶은 소식을 입력해주세요."/>
+  <meta property="og:image"
+        content="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2Fb8NSW8%2FbtrqtTWSHcK%2FkVmY2ION0F53DKuRC8efH0%2Fimg.jpg"/>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+          crossorigin="anonymous"></script>
+
   <title>Timeline Service</title>
 
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@200;300;400;500;600;700;900&display=swap"
+        rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500&display=swap" rel="stylesheet">
-  <script>
-        $(document).ready(function () {
-            getMessages();
-        })
 
-        function getMessages() {
-            $('#cards-box').empty();
-            $.ajax({
-                type: "GET",
-                url: "/api/memos",
-                data: {},
-                success: function (response) {
-                    for (let i = 0; i < response.length; i++) {
-                        let message = response[i];
-                        let id = message['id'];
-                        let username = message['username'];
-                        let contents = message['contents'];
-                        let modifiedAt = message['modifiedAt'];
-                        addHTML(id, username, contents, modifiedAt);
-                    }
-                }
-            });
-        }
-
-        function addHTML(id, username, contents, modifiedAt) {
-            let tempHtml = makeMessage(id, username, contents, modifiedAt);
-            $('#cards-box').append(tempHtml);
-        }
-
-        function makeMessage(id, username, contents, modifiedAt, i) {
-            return `<div class="card">
-                        <!-- date/username 영역 -->
-                        <div class="metadata">
-                            <div class="date">
-                                ${modifiedAt}
-                            </div>
-                            <div id="${id}-username" class="username">
-                                ${username}
-                            </div>
-                        </div>
-                        <!-- contents 조회/수정 영역-->
-                        <div class="contents">
-                            <div id="${id}-contents" class="text">
-                                ${contents}
-                            </div>
-                            <div id="${id}-editarea" class="edit">
-                                <textarea id="${id}-textarea" class="te-edit" name="" id="" cols="30" rows="5"></textarea>
-                            </div>
-                        </div>
-                        <!-- 버튼 영역-->
-                        <div class="footer">
-                            <img id="${id}-edit" class="icon-start-edit" src="images/edit.png" alt="" onclick="editPost('${id}')">
-                            <img id="${id}-delete" class="icon-delete" src="images/delete.png" alt="" onclick="deleteOne('${id}')">
-                            <img id="${id}-submit" class="icon-end-edit" src="images/done.png" alt="" onclick="submitEdit('${id}')">
-                        </div>
-                    </div>`;
-        }
-
-        function isValidContents(contents) {
-            if (contents == '') {
-                alert('내용을 입력해주세요');
-                return false;
-            }
-            if (contents.trim().length > 140) {
-                alert('공백 포함 140자 이하로 입력해주세요');
-                return false;
-            }
-            return true;
-        }
-
-        function genRandomName(length) {
-            let result = '';
-            let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-            let charactersLength = characters.length;
-            for (let i = 0; i < length; i++) {
-                let number = Math.random() * charactersLength;
-                let index = Math.floor(number);
-                result += characters.charAt(index);
-            }
-            return result;
-        }
-
-        function writePost() {
-            let contents = $('#contents').val();
-
-            if (isValidContents(contents) == false) {
-                return;
-            }
-
-            let username = genRandomName(10);
-            let data = {'username': username, 'contents': contents};
-
-            $.ajax({
-                type: "POST",
-                url: "/api/memos",
-                contentType: "application/json",
-                data: JSON.stringify(data),
-                success: function (response) {
-                    alert('메시지가 성공적으로 작성되었습니다.');
-                    window.location.reload();
-                }
-            });
-        }
-
-        function editPost(id) {
-            showEdits(id);
-            let contents = $(`#${id}-contents`).text().trim();
-            $(`#${id}-textarea`).val(contents);
-        }
-
-        function showEdits(id) {
-            $(`#${id}-editarea`).show();
-            $(`#${id}-submit`).show();
-            $(`#${id}-delete`).show();
-
-            $(`#${id}-contents`).hide();
-            $(`#${id}-edit`).hide();
-        }
-
-        function hideEdits(id) {
-            $(`#${id}-editarea`).hide();
-            $(`#${id}-submit`).hide();
-            $(`#${id}-delete`).hide();
-
-            $(`#${id}-contents`).show();
-            $(`#${id}-edit`).show();
-        }
-
-        function submitEdit(id) {
-            let username = $(`#${id}-username`).text().trim();
-            let contents = $(`#${id}-textarea`).val().trim();
-            if (isValidContents(contents) == false) {
-                return;
-            }
-            let data = {'username': username, 'contents': contents};
-
-            $.ajax({
-                type: "PUT",
-                url: `/api/memos/${id}`,
-                contentType: "application/json",
-                data: JSON.stringify(data),
-                success: function (response) {
-                    alert('메시지 변경에 성공하였습니다.');
-                    window.location.reload();
-                }
-            });
-        }
-
-        function deleteOne(id) {
-            $.ajax({
-                type: "DELETE",
-                url: `/api/memos/${id}`,
-                success: function (response) {
-                    alert('메시지 삭제에 성공하였습니다.');
-                    window.location.reload();
-                }
-            })
-        }
-    </script>
 
   <style>
-        @import url(//spoqa.github.io/spoqa-han-sans/css/SpoqaHanSans-kr.css);
+  @import url(//spoqa.github.io/spoqa-han-sans/css/SpoqaHanSans-kr.css);
+        * {
+            font-family: 'Noto Serif KR', serif;
+        }
 
         body {
-            margin: 0px;
+
         }
 
-        .area-edit {
-            display: none;
-        }
-
-        .wrap {
-            width: 538px;
-            margin: 10px auto;
-        }
-
-        #contents {
-            width: 538px;
-        }
-
-        .area-write {
-            position: relative;
-            width: 538px;
-        }
-
-        .area-write img {
-            cursor: pointer;
-            position: absolute;
-            width: 22.2px;
-            height: 18.7px;
-            bottom: 15px;
-            right: 17px;
-        }
-
-        .background-header {
-            position: fixed;
-            z-index: -1;
-            top: 0px;
+        .mypic {
             width: 100%;
-            height: 428px;
-            background-color: #339af0;
+            height: 300px;
+
+            background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2Fb8NSW8%2FbtrqtTWSHcK%2FkVmY2ION0F53DKuRC8efH0%2Fimg.jpg');
+            background-position: center 30%;
+            background-size: cover;
+
+            color: white;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
-        .background-body {
-            position: fixed;
-            z-index: -1;
-            top: 428px;
-            height: 100%;
-            width: 100%;
-            background-color: #dee2e6;
-        }
+        .mypost {
+            width: 95%;
+            max-width: 500px;
+            margin: 20px auto 20px auto;
 
-        .header {
-            margin-top: 50px;
-        }
+            box-shadow: 20px 20px 50px rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
 
-        .header h2 {
-            /*font-family: 'Noto Sans KR', sans-serif;*/
-            height: 33px;
-            font-size: 42px;
-            font-weight: 500;
-            font-stretch: normal;
-            font-style: normal;
-            line-height: 0.79;
-            letter-spacing: -0.5px;
-            text-align: center;
-            color: #ffffff;
-        }
-
-        .header p {
-            margin: 40px auto;
-            width: 217px;
-            height: 48px;
             font-family: 'Noto Sans KR', sans-serif;
             font-size: 16px;
-            font-weight: 500;
+
             font-stretch: normal;
             font-style: normal;
-            line-height: 1.5;
-            letter-spacing: -1.12px;
-            text-align: center;
-            color: #ffffff;
         }
 
-        textarea.field {
-            width: 502px !important;
-            height: 146px;
-            border-radius: 5px;
-            background-color: #ffffff;
-            border: none;
-            padding: 18px;
-            resize: none;
+        .mypost > button {
+            margin-top: 15px;
         }
 
-        textarea.field::placeholder {
-            width: 216px;
-            height: 16px;
-            font-family: 'Noto Sans KR', sans-serif;
-            font-size: 16px;
-            font-weight: normal;
-            font-stretch: normal;
-            font-style: normal;
-            line-height: 1;
-            letter-spacing: -0.96px;
-            text-align: left;
-            color: #868e96;
+        .card-format {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         .card {
-            width: 538px;
-            border-radius: 5px;
-            background-color: #ffffff;
-            margin-bottom: 12px;
+
+          width: 95%;
+          max-width: 500px;
+          height:100px;
+          margin-top: 15px;
+
+          box-shadow: 20px 20px 50px rgba(0, 0, 0, 0.5);
+          border-radius: 15px;
+          padding: 20px;
+
+
         }
 
-        .card .metadata {
-            position: relative;
-            display: flex;
-            font-family: 'Spoqa Han Sans';
-            font-size: 11px;
+       .card-body {
+       font-family: 'Spoqa Han Sans';
+            font-size: 13px;
             font-weight: normal;
             font-stretch: normal;
             font-style: normal;
-            line-height: 1;
-            letter-spacing: -0.77px;
-            text-align: left;
-            color: #adb5bd;
-            height: 14px;
-            padding: 10px 23px;
-        }
+       }
 
-        .card .metadata .date {
 
-        }
+<!--      table -->
+    .table {
+      displ
+      border-collapse: collapse;
+      border-top: 3px solid #168;
 
-        .card .metadata .username {
-            margin-left: 20px;
-        }
+    }
+    .table th {
+      color: #168;
+      background: #f0f6f9;
+      text-align: center;
+    }
+    .table th, .table td {
+      padding: 10px;
+      border: 1px solid #ddd;
+    }
+    .table th:first-child, .table td:first-child {
+      border-left: 0;
+    }
+    .table th:last-child, .table td:last-child {
+      border-right: 0;
+    }
+    .table tr td:first-child{
+      text-align: center;
+    }
+    .table caption{caption-side: bottom; display: none;}
 
-        .contents {
-            padding: 0px 23px;
-            word-wrap: break-word;
-            word-break: break-all;
-        }
+    #board {
+      padding: 30px;
+    }
 
-        .contents div.edit {
-            display: none;
-        }
+    #board-title {
+      display: flex;
+      justify-content: space-between;
+      font-size: 25px;
+      margin-bottom: 20px;
+    }
 
-        .contents textarea.te-edit {
-            border-right: none;
-            border-top: none;
-            border-left: none;
-            resize: none;
-            border-bottom: 1px solid #212529;
-            width: 100%;
-            font-family: 'Spoqa Han Sans';
-        }
+    #board-title input {
+      margin: 10px;
+      border: 1px solid #ddd;
+    }
 
-        .footer {
-            position: relative;
-            height: 40px;
-        }
+    .table-content:hover {
+        cursor: pointer;
+    }
 
-        .footer img.icon-start-edit {
-            cursor: pointer;
-            position: absolute;
-            bottom: 14px;
-            right: 55px;
-            width: 18px;
-            height: 18px;
-        }
-
-        .footer img.icon-end-edit {
-            cursor: pointer;
-            position: absolute;
-            display: none;
-            bottom: 14px;
-            right: 55px;
-            width: 20px;
-            height: 15px;
-        }
-
-        .footer img.icon-delete {
-            cursor: pointer;
-            position: absolute;
-            bottom: 12px;
-            right: 19px;
-            width: 14px;
-            height: 18px;
-        }
-
-        #cards-box {
-            margin-top: 12px;
-        }
+    .h1-title:hover {
+      cursor: pointer
+    }
     </style>
+
+  <script>
+    $(document).ready(function () {
+      showPost();
+    })
+
+    function showPost() {
+      let table = $('#post-table').empty();
+      $.ajax({
+        type: 'GET',
+        url: `/api/posts`,
+        success: function (response) {
+            // 4. for 문마다 itemDto를 꺼내서 HTML 만들고 검색결과 목록에 붙이기!
+            let tempHtml = `<tr><th>No</th><th>제목</th><th>글쓴이</th><th>작성시간</th></tr>`
+            $('#post-table').append(tempHtml);
+            for (let i = 0; i < response.length; i++) {
+                let post = response[i];
+                tempHtml = `<tr class="table-content" onclick="location.href='/api/posts/${post.id}'"><td>${post.id}</td><td>${post.title}</td><td>${post.writer}</td><td>${post.createdAt}</td></tr>`;
+                $('#post-table').append(tempHtml);
+            }
+            console.log("HI")
+        }
+
+      })
+    }
+  </script>
 </head>
-
 <body>
-<div class="background-header">
+<div class="mypic">
+  <h1 class="h1-title" onclick="location.href='/'">Timeline Service</h1>
+</div>
 
-</div>
-<div class="background-body">
 
+<div id="board">
+  <div id="board-title">
+    <p><strong>자유 게시판</strong></p>
+    <input type="button" class="btn btn-light btn-send-message" value="글쓰기" onclick="location.href='newpost'">
+  </div>
+
+  <table class="table" id="post-table">
+    <caption>표 제목</caption>
+    <tr><th>No</th><th style="width=200px">제목</th><th>글쓴이</th><th>작성시간</th></tr>
+    <tr><td>1</td><td>게시물 글 제목입니다</td><td>관리자</td><td>2018-08-01</td></tr>
+  </table>
 </div>
-<div class="wrap">
-  <div class="header">
-    <h2>Timeline Service</h2>
-    <p>
-      공유하고 싶은 소식을 입력해주세요.
-      24시간이 지난 뒤에는 사라집니다.
-    </p>
-  </div>
-  <div class="area-write">
-        <textarea class="field" placeholder="공유하고 싶은 소식을 입력해주세요" name="contents" id="contents" cols="30"
-                  rows="10"></textarea>
-    <!--            <button class="btn btn-danger" onclick="writePost()">작성하기</button>-->
-    <img src="images/send.png" alt="" onclick="writePost()">
-  </div>
-  <div id="cards-box" class="area-read">
-    <div class="card">
-      <!-- date/username 영역 -->
-      <div class="metadata">
-        <div class="date">
-          October 10, 2020
-        </div>
-        <div class="username">
-          anonymous
-        </div>
-      </div>
-      <!-- contents 조회/수정 영역-->
-      <div class="contents">
-        <div id="1-contents" class="text">
-          dsafnkalfklewakflekelafkleajfkleafkldsankflenwaklfnekwlafneklwanfkelawnfkelanfkleanfklew
-        </div>
-        <div id="1-editarea" class="edit">
-          <textarea id="1-textarea" class="te-edit" name="" id="" cols="30" rows="5"></textarea>
-        </div>
-      </div>
-      <!-- 버튼 영역-->
-      <div class="footer">
-        <img id="1-edit" class="icon-start-edit" src="images/edit.png" alt="" onclick="editPost('1')">
-        <img id="1-delete" class="icon-delete" src="images/delete.png" alt="" onclick="deleteOne('1')">
-        <img id="1-submit" class="icon-end-edit" src="images/done.png" alt="" onclick="submitEdit('1')">
-      </div>
-    </div>
-  </div>
-</div>
+
+
+
 </body>
-
 </html>
