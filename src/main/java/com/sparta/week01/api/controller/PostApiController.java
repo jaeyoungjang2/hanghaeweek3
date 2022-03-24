@@ -7,6 +7,7 @@ import com.sparta.week01.repository.PostsRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -49,5 +50,10 @@ public class PostApiController {
         postService.update(post_id, postDto);
 
         return post_id;
+    }
+
+    @DeleteMapping("/api/posts/{id}")
+    public void delete_post(@PathVariable("id") Long post_id) {
+        postsRepository.deleteById(post_id);
     }
 }

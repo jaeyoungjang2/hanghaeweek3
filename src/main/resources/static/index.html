@@ -166,7 +166,7 @@
         url: `/api/posts/`,
         success: function (response) {
             // 4. for 문마다 itemDto를 꺼내서 HTML 만들고 검색결과 목록에 붙이기!
-            let tempHtml = `<tr><th>No</th><th>제목</th><th>글쓴이</th><th>작성시간</th></tr>`
+            let tempHtml = `<tr><th style="width: 4%">No</th><th style="width: 58%">제목</th><th style="width: 13%">글쓴이</th><th style="width: 25%">작성시간</th></tr>`
             $('#post-table').append(tempHtml);
             for (let i = 0; i < response.length; i++) {
                 let post = response[i];
