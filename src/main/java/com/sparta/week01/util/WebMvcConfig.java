@@ -17,5 +17,4 @@ public class WebMvcConfig implements WebMvcConfigurer {
         objectMapper.getFactory().setCharacterEscapes(new HTMLCharacterEscapes());
         return new MappingJackson2HttpMessageConverter(objectMapper);
     }
-
 }

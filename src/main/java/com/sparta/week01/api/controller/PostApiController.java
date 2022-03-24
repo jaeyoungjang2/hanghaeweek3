@@ -1,12 +1,16 @@
 package com.sparta.week01.api.controller;
 
+import com.sparta.week01.api.service.PostService;
 import com.sparta.week01.domain.Post;
 import com.sparta.week01.domain.PostDto;
 import com.sparta.week01.repository.PostsRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -14,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class PostApiController {
 
+    private final PostService postService;
     private final PostsRepository postsRepository;
 
     // front에서 받은 정보를 database에 저장
@@ -27,10 +32,22 @@ public class PostApiController {
     @GetMapping("/api/posts")
     public List<Post> showPosts() {
         List<Post> posts = postsRepository.findAllByOrderByCreatedAtDesc();
-        System.out.println(posts);
-        for (Post post : posts) {
-            System.out.println(post.getCreatedAt());
-        }
         return posts;
+    }
+
+    @GetMapping("/api/posts/{id}")
+    public Post view_post(@PathVariable("id") Long post_id) {
+        Post post = postsRepository.findById(post_id).orElseThrow(
+            () -> new IllegalArgumentException("게시글이 존재하지 않습니다.")
+        );
+
+        return post;
+    }
+
+    @PutMapping("/api/editpost/{id}")
+    public Long update_post(@PathVariable("id") Long post_id, @RequestBody PostDto postDto) {
+        postService.update(post_id, postDto);
+
+        return post_id;
     }
 }

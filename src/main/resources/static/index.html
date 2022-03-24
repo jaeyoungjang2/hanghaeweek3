@@ -160,16 +160,17 @@
 
     function showPost() {
       let table = $('#post-table').empty();
+
       $.ajax({
         type: 'GET',
-        url: `/api/posts`,
+        url: `/api/posts/`,
         success: function (response) {
             // 4. for 문마다 itemDto를 꺼내서 HTML 만들고 검색결과 목록에 붙이기!
             let tempHtml = `<tr><th>No</th><th>제목</th><th>글쓴이</th><th>작성시간</th></tr>`
             $('#post-table').append(tempHtml);
             for (let i = 0; i < response.length; i++) {
                 let post = response[i];
-                tempHtml = `<tr class="table-content" onclick="location.href='/api/posts/${post.id}'"><td>${post.id}</td><td>${post.title}</td><td>${post.writer}</td><td>${post.createdAt}</td></tr>`;
+                tempHtml = `<tr class="table-content" onclick="location.href='postpage.html?query=${post.id}'"><td>${post.id}</td><td>${post.title}</td><td>${post.writer}</td><td>${post.createdAt}</td></tr>`;
                 $('#post-table').append(tempHtml);
             }
             console.log("HI")

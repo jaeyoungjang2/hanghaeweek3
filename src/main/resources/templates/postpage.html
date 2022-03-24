@@ -71,8 +71,49 @@
     .h1-title:hover {
       cursor: pointer
     }
-
     </style>
+
+  <script>
+    $(document).ready(function () {
+      showPost();
+    })
+
+    function showPost() {
+      // get 요청으로 post id를 보내고
+      // post id에 해당하는 작성자 작성일 콘텐츠 받아오면 됨
+      let post_id = window.location.search.split("=")[1];
+      $('#board').empty();
+
+      $.ajax({
+        type: 'GET',
+        url: `/api/posts/${post_id}`,
+        success: function (response) {
+          console.log(response)
+
+            let tempHtml = `<div id="board-title">
+                              <h2 ">${response.title}</h2>
+                            </div>
+
+                            <div id="writer-info">
+                              <span>${response.writer}</span>
+                              <span>${response.createdAt}</span>
+                            </div>
+
+                            <div id="content">
+                              <p> ${response.content}</p>
+                            </div>
+                            <img id="${response.id}-edit" class="icon-start-edit" src="images/edit.png" alt="" onclick="location.href='editpost.html?query=${response.id}'">
+  <img id="${response.id}-delete" class="icon-delete" src="images/delete.png" alt="" onclick="deleteOne('${response.id}')">
+  <img id="${response.id}-submit" class="icon-end-edit" src="images/done.png" alt="" onclick="submitEdit('${response.id}')">
+  `
+            $('#board').append(tempHtml);
+        }
+
+      })
+    }
+
+
+  </script>
 
 
 </head>
@@ -95,7 +136,9 @@
   <div id="content">
     <p th:text="${post.content}"> 이곳에는 내용을 적을 예정입니다.</p>
   </div>
+
 </div>
+
 
 </body>
 </html>
